@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_sportly/config/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const MainApp());
+Future<void> main() async{
+  runApp(
+    const ProviderScope(child: MainApp() )
+  );
 }
 
 class MainApp extends StatelessWidget {

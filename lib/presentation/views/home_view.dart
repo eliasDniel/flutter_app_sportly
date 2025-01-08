@@ -1,90 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_sportly/insfrastructure/models/league.dart';
 import 'package:flutter_app_sportly/insfrastructure/models/partido.dart';
 import 'package:flutter_app_sportly/insfrastructure/models/torneo.dart';
 import 'package:flutter_app_sportly/presentation/screens/providers/consumir_provider.dart';
+import 'package:flutter_app_sportly/presentation/views/customs/lisview_campeones.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Ejemplo de HomeView como ConsumerStatefulWidget
 class HomeView extends ConsumerStatefulWidget {
-  const HomeView({super.key});
+  final String code;
+  const HomeView({super.key, required this.code});
 
   @override
   ConsumerState<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  late Future<League> league;
+
   @override
   void initState() {
     super.initState();
-    ref.read(providerTorneo).obtenerTorneo();
+    league = ref.read(providerTorneo.notifier).obtenerLeague(widget.code);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Torneo> listaTorneos = ref.read(providerTorneo).listaTorneo;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: const Icon(Icons.search, color: Colors.white),
-        title: const Text(
-          'SPORTLY',
-          style: TextStyle(
-              color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: const [Icon(Icons.settings, color: Colors.white)],
-      ),
-      body: ListView(
-        children: [
-          CardInicio(),
-          CustromCardPartido(),
-          SizedBox(
-            height: 5,
-          ),
-          Center(
-              child: Text(
-            '2nd LEG - LIVERPOOL ADVANCE 2-1 ON AGGREGATE',
-            style: TextStyle(
-                color: Colors.black54,
-                fontSize: 12,
-                fontWeight: FontWeight.w500),
-          )),
-          SizedBox(
-            height: 5,
-          ),
-          CustomCardInfo(),
-          SizedBox(
-            height: 5,
-          ),
-          Row(
-            children: [
-              CustomBottom(
-                descrip: 'SUMMARY',
+      body: FutureBuilder<League>(
+        future: league,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final league = snapshot.data!;
+            return ListView(children: [
+              AppBar(
+                backgroundColor: Colors.black,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(
+                        context); // This will pop the current screen and navigate back
+                  },
+                ),
+                title: Text(
+                  league.name,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                centerTitle: true,
+                actions: const [Icon(Icons.settings, color: Colors.white)],
               ),
-              SizedBox(width: 5),
-              CustomBottom(
-                descrip: 'STATISTICS',
-              ),
-              SizedBox(width: 5),
-              CustomBottom(
-                descrip: 'COMMENTARY',
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 5,
-          ),
-          ...listaTorneos.map(
-            (torneo) {
-              return CustomTorneo(
-                torneo: torneo,
-              );
-            },
-          ),
-          const SizedBox(
-            height: 10,
-          )
-        ],
+              MoviesSlideshow(seasons: league.seasons),
+            ]);
+          } else {
+            return const Center(child: Text('No data available'));
+          }
+        },
       ),
     );
   }

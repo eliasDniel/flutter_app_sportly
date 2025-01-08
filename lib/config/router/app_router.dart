@@ -1,19 +1,31 @@
+
 import 'package:flutter_app_sportly/presentation/screens/home_screen.dart';
+import 'package:flutter_app_sportly/presentation/screens/initial_screen.dart';
 import 'package:go_router/go_router.dart';
 
 
 
-final appRouter = GoRouter(initialLocation: '/home/0', routes: [
+final appRouter = GoRouter(initialLocation: '/initial', routes: [
+
   GoRoute(
-      path: '/home/:page',
+    path: '/initial',
+    name: InitialScreen.name,
+    builder: (context, state) => const InitialScreen(),
+    routes: [
+      GoRoute(
+      path: 'home/:code/:page',
       name: HomeScreen.name,
       builder: (context, state) {
         final pageIndex = int.parse(state.params['page'] ?? '0');
-        return HomeScreen(pageIndex: pageIndex);
+        final code = state.params['code'] ?? '';
+        return HomeScreen(pageIndex: pageIndex,code: code);
       },
      ),
+    ]
+    ),
+  
   GoRoute(
     path: '/',
-    redirect: (_, __) => '/home/0',
+    redirect: (_, __) => '/initial',
   ),
 ]);

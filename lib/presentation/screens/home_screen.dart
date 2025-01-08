@@ -7,15 +7,15 @@ import 'package:flutter_app_sportly/presentation/views/watch_screen_view.dart';
 class HomeScreen extends StatefulWidget {
   static const String name = 'home_screen';
   final int pageIndex;
+  final String code;
 
-  const HomeScreen({super.key, required this.pageIndex});
+  const HomeScreen({super.key, required this.pageIndex, required this.code});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   late PageController pageController;
 
   @override
@@ -30,15 +30,11 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  final viewRoutes = const <Widget>[
-    HomeView(),
-    ScoresScreen(), // <--- categorias View
-    WatchScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    // Lógica para actualizar la vista según el pageIndex
     if (pageController.hasClients) {
       pageController.animateToPage(
         widget.pageIndex,
@@ -49,14 +45,17 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Scaffold(
       body: PageView(
-        //* Esto evitará que rebote
         physics: const NeverScrollableScrollPhysics(),
         controller: pageController,
-        // index: pageIndex,
-        children: viewRoutes,
+        children: [
+          HomeView(code: widget.code),
+          ScoresScreen(),
+          WatchScreen(),
+        ],
       ),
       bottomNavigationBar: CustomBottomNavigation(
         currentIndex: widget.pageIndex,
+        code: widget.code,
       ),
     );
   }

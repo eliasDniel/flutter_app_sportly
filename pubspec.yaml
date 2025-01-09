@@ -12,6 +12,8 @@ dependencies:
   flutter_dotenv: ^5.0.2
   flutter_svg: ^2.0.7
   card_swiper: ^2.0.4
+  shimmer: ^2.0.0
+  intl: ^0.18.0
   dio: ^5.0.0
   flutter:
     sdk: flutter

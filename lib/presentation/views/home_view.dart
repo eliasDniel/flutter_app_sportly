@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_sportly/insfrastructure/models/league.dart';
+import 'package:flutter_app_sportly/insfrastructure/models/match.dart';
 import 'package:flutter_app_sportly/insfrastructure/models/partido.dart';
 import 'package:flutter_app_sportly/insfrastructure/models/torneo.dart';
 import 'package:flutter_app_sportly/presentation/screens/providers/consumir_provider.dart';
+import 'package:flutter_app_sportly/presentation/screens/providers/torneo_provider.dart';
 import 'package:flutter_app_sportly/presentation/views/customs/lisview_campeones.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer/shimmer.dart'; // Importa el paquete shimmer
 
 // Ejemplo de HomeView como ConsumerStatefulWidget
 class HomeView extends ConsumerStatefulWidget {
@@ -20,42 +23,70 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   @override
   void initState() {
-    super.initState();
+    // ref.read(providerTorneo).obtenerPrimerosPartidos(widget.code);
     league = ref.read(providerTorneo.notifier).obtenerLeague(widget.code);
+
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final providerPartido = ref.read(providerTorneo);
+
     return Scaffold(
       body: FutureBuilder<League>(
         future: league,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: SizedBox());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final league = snapshot.data!;
-            return ListView(children: [
-              AppBar(
-                backgroundColor: Colors.black,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pop(
-                        context); // This will pop the current screen and navigate back
-                  },
+            return ListView(
+              children: [
+                AppBar(
+                  backgroundColor: Colors.transparent,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () {
+                      Navigator.pop(
+                          context); // This will pop the current screen and navigate back
+                    },
+                  ),
+                  title: Text(
+                    league.name,
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Image.network(league.emblem))
+                  ],
                 ),
-                title: Text(
-                  league.name,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                const SizedBox(height: 10),
+                MoviesSlideshow(seasons: league.seasons),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Match Schedule',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                      Text('See All')
+                    ],
+                  ),
                 ),
-                centerTitle: true,
-                actions: const [Icon(Icons.settings, color: Colors.white)],
-              ),
-              MoviesSlideshow(seasons: league.seasons),
-            ]);
+                providerPartido.isloading
+                    ? _buildShimmerEffect() // Aquí mostramos el efecto shimmer
+                    : _buildMatchList(providerPartido),
+              ],
+            );
           } else {
             return const Center(child: Text('No data available'));
           }
@@ -63,7 +94,131 @@ class _HomeViewState extends ConsumerState<HomeView> {
       ),
     );
   }
+
+  // Método para mostrar el efecto shimmer cuando los partidos están cargando
+  Widget _buildShimmerEffect() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          children: List.generate(
+            3, // Aquí creamos 3 "partidos" para simular el efecto shimmer
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Container(
+                height: 50,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Método para mostrar la lista de partidos una vez cargados
+  Widget _buildMatchList(TorneoProvider providerPartido) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: providerPartido.primeros3Partidos.length,
+      itemBuilder: (context, index) {
+        final partido = providerPartido.primeros3Partidos[index];
+        return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+            child: CustomPartidoMath(partido: partido));
+      },
+    );
+  }
 }
+
+class CustomPartidoMath extends StatelessWidget {
+  const CustomPartidoMath({
+    super.key,
+    required this.partido,
+  });
+
+  final Matche partido;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          color: const Color(0xff222232), borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Row(children: [
+                Expanded(
+                  child: Text(
+                    partido.homeTeam.shortName.length > 10
+                        ? partido.homeTeam.shortName.substring(0, 7)
+                        : partido.homeTeam.shortName.padRight(7),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,fontSize: 13),
+                  ),
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Image.network(
+                  partido.homeTeam.crest,
+                  height: 40,
+                  width: 40,
+                )
+              ])),
+            const SizedBox(
+              width: 5,
+            ),
+            SizedBox(
+              width: 90,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    partido.formattedDate,
+                    style: const TextStyle(fontSize: 12,fontWeight: FontWeight.w500 ),
+                  ),
+                  Text(
+                    partido.status,
+                    style: const TextStyle(color: Colors.white, fontSize: 12,fontWeight: FontWeight.w500),
+                  )
+                ]
+              ),
+            ),
+            const SizedBox(
+              width: 5,
+            ),
+            Expanded(
+              child: Row(
+                children: [
+                  Image.network(
+                    partido.awayTeam.crest,
+                    height: 40,
+                    width: 40,
+                  ),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    partido.awayTeam.shortName.length > 10
+                        ? partido.awayTeam.shortName.substring(0, 7)
+                        : partido.awayTeam.shortName.padRight(7),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class CustomTorneo extends StatelessWidget {
   final Torneo torneo;

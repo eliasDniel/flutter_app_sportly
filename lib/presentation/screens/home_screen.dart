@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_sportly/presentation/views/customs/customs_navigator.dart';
-import 'package:flutter_app_sportly/presentation/views/home_view.dart';
-import 'package:flutter_app_sportly/presentation/views/scores_screen_view.dart';
-import 'package:flutter_app_sportly/presentation/views/watch_screen_view.dart';
+import '../views/customs/customs_navigator.dart';
+import '../views/home_view.dart';
+import '../views/scores_screen_view.dart';
+import '../views/watch_screen_view.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String name = 'home_screen';
@@ -33,8 +33,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
-    // Lógica para actualizar la vista según el pageIndex
     if (pageController.hasClients) {
       pageController.animateToPage(
         widget.pageIndex,
@@ -49,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         controller: pageController,
         children: [
           HomeView(code: widget.code),
-          ScoresScreen(),
-          WatchScreen(),
+          const ScoresScreen(),
+          const WatchScreen(),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigation(

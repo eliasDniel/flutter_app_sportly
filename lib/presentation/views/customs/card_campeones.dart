@@ -1,62 +1,13 @@
-import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app_sportly/insfrastructure/models/league.dart';
+import '../../../insfrastructure/models/league/season.dart';
+import '../../../insfrastructure/models/league/winner.dart';
 
-class MoviesSlideshow extends StatefulWidget {
-  final List<Season> seasons;
-
-  const MoviesSlideshow({
-    super.key,
-    required this.seasons,
-  });
-
-  @override
-  State<MoviesSlideshow> createState() => _MoviesSlideshowState();
-}
-
-class _MoviesSlideshowState extends State<MoviesSlideshow> {
-  final ValueNotifier<int> activeIndex = ValueNotifier<int>(0);
-
-  @override
-  void dispose() {
-    activeIndex.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredSeasons =
-        widget.seasons.where((season) => season.winner != null).toList();
-
-    return SizedBox(
-      height: 230,
-      width: double.infinity,
-      child: Swiper(
-        viewportFraction: 0.8,
-        scale: 0.9,
-        itemCount: filteredSeasons.length,
-        onIndexChanged: (index) => activeIndex.value = index,
-        itemBuilder: (context, index) => ValueListenableBuilder<int>(
-          valueListenable: activeIndex,
-          builder: (context, currentIndex, _) {
-            return _Slide(
-              season: filteredSeasons[index],
-              winner: filteredSeasons[index].winner!,
-              isActive: currentIndex == index, // Verifica si es el activo
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _Slide extends StatelessWidget {
+class Slide extends StatelessWidget {
   final Season season;
   final Winner winner;
   final bool isActive;
 
-  const _Slide({
+  const Slide({super.key, 
     required this.winner,
     required this.season,
     required this.isActive,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_sportly/insfrastructure/models/league/league.dart';
-import 'package:flutter_app_sportly/presentation/screens/providers/consumir_provider.dart';
-import 'package:flutter_app_sportly/presentation/views/customs/swiper_campeones.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../insfrastructure/models/league/league.dart';
+import '../screens/providers/consumir_provider.dart';
 import 'customs/custom_listar_partidos.dart';
-import 'customs/squeletor.dart';// Importa el paquete shimmer
+import 'customs/squeletor.dart';
+import 'customs/swiper_campeones.dart';// Importa el paquete shimmer
 
 class HomeView extends ConsumerStatefulWidget {
   final String code;
